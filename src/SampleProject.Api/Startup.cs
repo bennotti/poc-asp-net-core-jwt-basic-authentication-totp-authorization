@@ -26,7 +26,7 @@ namespace SampleProject.Api
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("TotpUser", (policy) => {
+                options.AddPolicy("TotpValidate", (policy) => {
                     policy.Requirements.Add(new TotpRequirement());
                 });
             });

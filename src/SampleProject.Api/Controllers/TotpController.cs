@@ -35,8 +35,8 @@ namespace SampleProject.Api.Controllers
 
         [HttpPost]
         [Route("validate")]
-        [Authorize(Policy = "TotpUser")]
-        public TotpKeyValidateResponseDto PostValidade()
+        [Authorize(Policy = "TotpValidate")]
+        public TotpKeyValidateResponseDto PostValidate()
         {
             _logger.LogInformation("Totp validado");
             return new TotpKeyValidateResponseDto
