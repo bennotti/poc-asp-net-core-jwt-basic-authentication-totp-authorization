@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SampleProject.Infrastructure.Authorization
 {
-    public class TotpRequirement : IAuthorizationRequirement
+    public class TotpAuthorizationRequirement : IAuthorizationRequirement
     {
         
     }

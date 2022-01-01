@@ -27,13 +27,13 @@ namespace SampleProject.Api
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("TotpValidate", (policy) => {
-                    policy.Requirements.Add(new TotpRequirement());
+                    policy.Requirements.Add(new TotpAuthorizationRequirement());
                 });
             });
 
             services.AddHttpContextAccessor();
 
-            services.AddSingleton<IAuthorizationHandler, TotpHandler>();
+            services.AddSingleton<IAuthorizationHandler, TotpAuthorizationHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

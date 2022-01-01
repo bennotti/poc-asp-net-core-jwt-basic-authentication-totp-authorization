@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace SampleProject.Infrastructure.Authorization.Handle
 {
-    public class TotpHandler : AuthorizationHandler<TotpRequirement>
+    public class TotpAuthorizationHandler : AuthorizationHandler<TotpAuthorizationRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TotpHandler(IHttpContextAccessor httpContextAccessor)
+        public TotpAuthorizationHandler(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TotpRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TotpAuthorizationRequirement requirement)
         {
             if (_httpContextAccessor == null)
             {
