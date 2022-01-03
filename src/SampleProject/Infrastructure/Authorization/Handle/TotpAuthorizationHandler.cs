@@ -19,11 +19,16 @@ namespace SampleProject.Infrastructure.Authorization.Handle
         }
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TotpAuthorizationRequirement requirement)
         {
-            if (_httpContextAccessor == null)
+            if (!context.User.Identity.IsAuthenticated)
             {
                 context.Fail();
                 return;
             }
+
+            var userIdentity = context.User.Identity;
+
+            // pode ser feito a validação do token, mesmo que valido (não expirado e assinatura correta), esta bloqueado no banco de dados ou algum outro lugar.
+
             var secret = _httpContextAccessor.HttpContext.Request.Headers["OTP-TEMP-SECRET"].FirstOrDefault()?.Split(" ").Last();
             var totpToken = _httpContextAccessor.HttpContext.Request.Headers["OTP-USER-TOKEN"].FirstOrDefault()?.Split(" ").Last();
             if (string.IsNullOrEmpty(secret) || string.IsNullOrEmpty(totpToken))
