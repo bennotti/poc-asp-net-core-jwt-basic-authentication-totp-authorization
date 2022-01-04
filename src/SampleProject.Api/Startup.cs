@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,12 +46,6 @@ namespace SampleProject.Api
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Basic", (policy) => {
-                    policy.AuthenticationSchemes.Add("Basic");
-                    policy.RequireAuthenticatedUser();
-                    policy.Requirements.Add(new BasicAuthorizationRequirement());
-                });
-
                 options.AddPolicy("TotpValidate", (policy) => {
                     policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
                     policy.AuthenticationSchemes.Add("Basic");
@@ -58,25 +53,20 @@ namespace SampleProject.Api
                     policy.Requirements.Add(new TotpAuthorizationRequirement());
                 });
 
-                options.AddPolicy("Bearer", (policy) => {
-                    policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
-                    policy.RequireAuthenticatedUser();
-                    policy.Requirements.Add(new JwtAuthorizationRequirement());
-                });
-
-                options.DefaultPolicy = options.GetPolicy("Bearer");
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .AddAuthenticationSchemes("Basic", "Bearer")
+                    .AddRequirements(new JwtAuthorizationRequirement())
+                    .AddRequirements(new BasicAuthorizationRequirement())
+                    .Build();
             });
 
             services.AddHttpContextAccessor();
 
             services.AddSingleton<IAuthorizationHandler, JwtAuthorizationHandler>();
-
             services.AddSingleton<IAuthorizationHandler, TotpAuthorizationHandler>();
-
             services.AddSingleton<IAuthorizationHandler, BasicAuthorizationHandler>();
-
-            services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, ValidIdentityAuthorizationHandler>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
@@ -84,8 +74,9 @@ namespace SampleProject.Api
                     options.SaveToken = true;
                     options.IncludeErrorDetails = true;
                     options.TokenValidationParameters = jwtBuilder.BuildTokenValidationParameters();
+                    options.Events = new JwtCustomEvents();
                 })
-                .AddScheme<AuthenticationSchemeOptions, SampleProjectAuthenticationHandler>("Basic", null);
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -15,19 +15,15 @@ using System.Threading.Tasks;
 
 namespace SampleProject.Infrastructure.Authentication.Handle
 {
-    public class SampleProjectAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly JwtSettings _jwtSettings;
-
-        public SampleProjectAuthenticationHandler(
-            JwtSettings jwtSettings,
+        public BasicAuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
-            _jwtSettings = jwtSettings;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -37,12 +33,13 @@ namespace SampleProject.Infrastructure.Authentication.Handle
 
             if (endpoint?.Metadata?.GetMetadata<IAuthorizeData>() == null) return AuthenticateResult.NoResult();
 
-            // pode ser feito a validação do token, mesmo que valido (não expirado e assinatura correta), esta bloqueado no banco de dados ou algum outro lugar.
+            if (Context.User.Identity.IsAuthenticated) {
+                return AuthenticateResult.NoResult();
+            }
 
             var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-            var splitAuthHeader = authHeader.Parameter?.Split(" ");
-            var schema = splitAuthHeader.First();
-            var authorization = splitAuthHeader.Last();
+            var schema = authHeader.Scheme;
+            var authorization = authHeader.Parameter?.Split(" ").Last();
             if (string.IsNullOrEmpty(schema) || string.IsNullOrEmpty(authorization))
             {
                 return AuthenticateResult.Fail("Invalid Authorization");
